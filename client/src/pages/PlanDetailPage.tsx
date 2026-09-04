@@ -66,6 +66,10 @@ export default function PlanDetailPage() {
   const { saturday, sunday } = getNextWeekendDates();
   const heroBgUrl = trip ? `/api/places/photo?query=${encodeURIComponent(trip.destination + ' germany')}` : '';
 
+  const calculatedBudget = trip ? trip.days.reduce((total, day) => {
+    return total + day.activities.reduce((sum, act) => sum + (act.estimatedPrice || 0), 0);
+  }, 0) : 0;
+
   return (
     <>
       <SeoHead 
@@ -117,7 +121,7 @@ export default function PlanDetailPage() {
               </div>
               <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
                 <Wallet size={16} className="text-amber-400" />
-                <span>Budget: {trip.totalBudget} €</span>
+                <span>Aktivitäten: {Math.round(calculatedBudget)} €</span>
               </div>
               <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
                 <Leaf size={16} className="text-green-400" />
