@@ -7,8 +7,8 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "install:client": "cd client && npm install --legacy-peer-deps",
-    "install:server": "cd server && npm install",
+    "install:client": "cd client && npm install --include=dev --legacy-peer-deps",
+    "install:server": "cd server && npm install --include=dev",
     "postinstall": "npm run install:client && npm run install:server",
     "build": "npm run build --prefix client && npm run build --prefix server",
     "start": "node server/dist/index.js",
