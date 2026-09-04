@@ -26,27 +26,14 @@ export const getSystemLogs = async (req: Request, res: Response) => {
 };
 
 export const testGeminiConnection = async (req: Request, res: Response) => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return res.status(400).json({ error: 'GEMINI_API_KEY not set' });
-  }
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: 'Ping' }] }]
-      })
-    });
-
-    const data = await response.json();
+    const { generateWithGemini } = await import('../services/gemini');
+    const responseText = await generateWithGemini('Respond with JSON: {"ping": "pong"}');
+    
     return res.json({
-      status: response.status,
-      ok: response.ok,
-      data
+      status: 200,
+      ok: true,
+      data: JSON.parse(responseText)
     });
   } catch (error: any) {
     return res.status(500).json({
