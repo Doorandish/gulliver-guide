@@ -24,7 +24,13 @@ export const generateTrip = async (req: Request, res: Response) => {
     const slug = `${baseSlug}-mit-der-bahn`;
 
     // 1. Check Redis Cache
-    const cachedTrip = await redisClient.get(`trip:${slug}`);
+    let cachedTrip = null;
+    try {
+      cachedTrip = await redisClient.get(`trip:${slug}`);
+    } catch (redisErr) {
+      console.warn('Redis cache get failed in generateTrip:', redisErr);
+    }
+    
     if (cachedTrip) {
       return res.json(JSON.parse(cachedTrip));
     }
@@ -32,7 +38,11 @@ export const generateTrip = async (req: Request, res: Response) => {
     // 2. Check MongoDB
     let trip = await TripPlan.findOne({ slug });
     if (trip) {
-      await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+      try {
+        await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+      } catch (redisErr) {
+        console.warn('Redis cache set failed in generateTrip:', redisErr);
+      }
       return res.json(trip);
     }
 
@@ -45,7 +55,11 @@ export const generateTrip = async (req: Request, res: Response) => {
     await trip.save();
 
     // 5. Cache in Redis (7 days TTL)
-    await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+    try {
+      await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+    } catch (redisErr) {
+      console.warn('Redis cache set failed in generateTrip:', redisErr);
+    }
 
     return res.status(201).json(trip);
   } catch (error) {
@@ -58,7 +72,13 @@ export const getTripBySlug = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
 
-    const cachedTrip = await redisClient.get(`trip:${slug}`);
+    let cachedTrip = null;
+    try {
+      cachedTrip = await redisClient.get(`trip:${slug}`);
+    } catch (redisErr) {
+      console.warn('Redis cache get failed in getTripBySlug:', redisErr);
+    }
+    
     if (cachedTrip) {
       return res.json(JSON.parse(cachedTrip));
     }
@@ -68,7 +88,11 @@ export const getTripBySlug = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Trip not found' });
     }
 
-    await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+    try {
+      await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+    } catch (redisErr) {
+      console.warn('Redis cache set failed in getTripBySlug:', redisErr);
+    }
     return res.json(trip);
   } catch (error) {
     console.error('Error fetching trip by slug:', error);
@@ -91,7 +115,13 @@ export const planTrip = async (req: Request, res: Response) => {
     const slug = `${baseSlug}-mit-der-bahn`;
 
     // 1. Check Redis Cache
-    const cachedTrip = await redisClient.get(`trip:${slug}`);
+    let cachedTrip = null;
+    try {
+      cachedTrip = await redisClient.get(`trip:${slug}`);
+    } catch (redisErr) {
+      console.warn('Redis cache get failed in planTrip:', redisErr);
+    }
+    
     if (cachedTrip) {
       return res.json(JSON.parse(cachedTrip));
     }
@@ -99,7 +129,11 @@ export const planTrip = async (req: Request, res: Response) => {
     // 2. Check MongoDB
     let trip = await TripPlan.findOne({ slug });
     if (trip) {
-      await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+      try {
+        await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+      } catch (redisErr) {
+        console.warn('Redis cache set failed in planTrip:', redisErr);
+      }
       return res.json(trip);
     }
 
@@ -112,7 +146,11 @@ export const planTrip = async (req: Request, res: Response) => {
     await trip.save();
 
     // 5. Cache in Redis (7 days TTL)
-    await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+    try {
+      await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
+    } catch (redisErr) {
+      console.warn('Redis cache set failed in planTrip:', redisErr);
+    }
 
     return res.status(201).json(trip);
   } catch (error: any) {

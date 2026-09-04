@@ -27,7 +27,7 @@ export const generateItinerary = async (destination: string): Promise<TripPlanDa
     throw new Error('GEMINI_API_KEY is not set');
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
   const prompt = `Act as an expert German travel planner. Generate a weekend trip itinerary for ${destination}. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation. Return JSON.`;
 
@@ -120,7 +120,7 @@ export const discoverDestinations = async (
     throw new Error('GEMINI_API_KEY is missing');
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
   const budgetHint = budget ? ` Budget-Niveau: ${budget}.` : '';
   const styleHint = style ? ` Reisestil: ${style}.` : '';

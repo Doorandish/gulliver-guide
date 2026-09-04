@@ -31,7 +31,7 @@ export const testGeminiConnection = async (req: Request, res: Response) => {
     return res.status(400).json({ error: 'GEMINI_API_KEY not set' });
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
   try {
     const response = await fetch(url, {

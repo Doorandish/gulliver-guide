@@ -6,6 +6,7 @@ import apiRoutes from './routes/api.routes';
 import { connectDB } from './config/db';
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
 // Body parser
