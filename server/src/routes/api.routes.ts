@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { generateTrip, getTripBySlug, getHealth, planTrip, discoverTrips } from '../controllers/trip.controller';
 import { getSystemLogs, testGeminiConnection } from '../controllers/system.controller';
+import { getWeather } from '../controllers/weather.controller';
 import { systemLogger } from '../utils/logger';
 
 const router = Router();
@@ -28,6 +29,7 @@ router.post('/trips/discover', discoverTrips);
 router.get('/trips/:slug', getTripBySlug);
 router.get('/health', getHealth);
 
+router.get('/weather/:city', getWeather);
 router.get('/system/logs', getSystemLogs);
 router.post('/system/test-gemini', testGeminiConnection);
 
