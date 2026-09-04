@@ -24,3 +24,12 @@ export interface TripPlan {
   metaTitle?: string;
   metaDescription?: string;
 }
+
+export interface DiscoverySuggestion {
+  destination: string;
+  tagline: string;
+  travelTimeHours: number;
+  highlights: string[];
+  estimatedBudget: number;
+  category: string;
+}

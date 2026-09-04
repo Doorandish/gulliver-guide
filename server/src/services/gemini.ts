@@ -98,3 +98,77 @@ export const generateItinerary = async (destination: string): Promise<TripPlanDa
   
   return JSON.parse(text) as TripPlanData;
 };
+
+export interface DiscoverySuggestion {
+  destination: string;
+  tagline: string;
+  travelTimeHours: number;
+  highlights: string[];
+  estimatedBudget: number;
+  category: string;
+}
+
+export const discoverDestinations = async (
+  origin: string,
+  weekend: string,
+  budget?: string,
+  style?: string
+): Promise<DiscoverySuggestion[]> => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not set');
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+  const budgetHint = budget ? ` Budget-Niveau: ${budget}.` : '';
+  const styleHint = style ? ` Reisestil: ${style}.` : '';
+
+  const prompt = `Schlage 3 perfekte Wochenendziele vor für eine Zugreise ab ${origin}. Zeitraum: ${weekend}.${budgetHint}${styleHint} Nur echte deutsche Städte und Attraktionen. Alles auf Deutsch.`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      systemInstruction: {
+        parts: [{ text: 'Du bist ein Experte für Wochenendreisen in Deutschland per Bahn. Schlage 3 unterschiedliche Reiseziele vor, die per Zug vom Abfahrtsort gut erreichbar sind. Antworte nur mit echten Städten und authentischen Sehenswürdigkeiten. Alles auf Deutsch.' }],
+      },
+      generationConfig: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'OBJECT',
+          properties: {
+            suggestions: {
+              type: 'ARRAY',
+              items: {
+                type: 'OBJECT',
+                properties: {
+                  destination: { type: 'STRING' },
+                  tagline: { type: 'STRING' },
+                  travelTimeHours: { type: 'NUMBER' },
+                  highlights: { type: 'ARRAY', items: { type: 'STRING' } },
+                  estimatedBudget: { type: 'NUMBER' },
+                  category: { type: 'STRING' }
+                },
+                required: ['destination', 'tagline', 'travelTimeHours', 'highlights', 'estimatedBudget', 'category']
+              }
+            }
+          },
+          required: ['suggestions']
+        }
+      }
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Gemini API error: ${response.statusText}`);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: any = await response.json();
+  let text: string = data.candidates[0].content.parts[0].text;
+  text = text.replace(/^```json/m, '').replace(/^```/m, '').trim();
+  const parsed = JSON.parse(text);
+  return parsed.suggestions as DiscoverySuggestion[];
+};
