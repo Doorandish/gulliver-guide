@@ -107,9 +107,20 @@ export const generateItinerary = async (destination: string): Promise<TripPlanDa
   const prompt = `Act as an expert German travel planner. Generate a weekend trip itinerary for ${destination}. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
 
   const geminiResponse = await generateWithGemini(prompt, systemInstruction);
-  let text = geminiResponse.text.replace(/^```json/m, '').replace(/^```/m, '').trim();
   
-  return JSON.parse(text) as TripPlanData;
+  let text = geminiResponse.text;
+  try {
+    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      text = text.substring(firstBrace, lastBrace + 1);
+    }
+    return JSON.parse(text) as TripPlanData;
+  } catch (error) {
+    console.error('Failed to parse Gemini JSON response:', geminiResponse.text);
+    throw new Error('Failed to parse trip itinerary JSON from AI');
+  }
 };
 
 export const discoverDestinations = async (
@@ -138,8 +149,19 @@ export const discoverDestinations = async (
   const prompt = `Schlage ein JSON Array mit 3 perfekten Wochenendzielen vor für eine Zugreise ab ${origin} (z.B. ab München -> Salzburg, Regensburg, Garmisch-Partenkirchen). Zeitraum: ${weekend}.${budgetHint}${styleHint} Nur echte deutsche Städte und Attraktionen. Alles auf Deutsch. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
 
   const geminiResponse = await generateWithGemini(prompt, systemInstruction);
-  let text = geminiResponse.text.replace(/^```json/m, '').replace(/^```/m, '').trim();
-  const parsed = JSON.parse(text);
   
-  return parsed.suggestions as DiscoverySuggestion[];
+  let text = geminiResponse.text;
+  try {
+    text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      text = text.substring(firstBrace, lastBrace + 1);
+    }
+    const parsed = JSON.parse(text);
+    return parsed.suggestions as DiscoverySuggestion[];
+  } catch (error) {
+    console.error('Failed to parse Gemini JSON response for discovery:', geminiResponse.text);
+    throw new Error('Failed to parse discovery JSON from AI');
+  }
 };
