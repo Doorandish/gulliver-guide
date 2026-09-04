@@ -94,7 +94,8 @@ export default function DiscoveryPage() {
     }
   };
 
-  const getCategoryEmoji = (cat: string) => {
+  const getCategoryEmoji = (cat?: string) => {
+    if (!cat) return '✨';
     if (cat.includes('Kultur')) return '🏛️';
     if (cat.includes('Natur')) return '🌲';
     if (cat.includes('Romantik')) return '❤️';
@@ -162,7 +163,7 @@ export default function DiscoveryPage() {
                         className="w-full h-full group-hover:scale-105 transition-transform duration-700"
                         categoryBadge={
                           <span className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-slate-700 flex items-center gap-1 shadow-sm">
-                            {getCategoryEmoji(dest.category)} {dest.category}
+                            {getCategoryEmoji(dest.category)} {dest.category || 'Trip'}
                           </span>
                         }
                       />
@@ -174,7 +175,7 @@ export default function DiscoveryPage() {
 
                     <div className="p-5 flex-grow flex flex-col">
                       <h3 className="text-xl font-bold text-slate-800 mb-1">{dest.destination}</h3>
-                      <p className="text-slate-500 text-sm mb-4 leading-snug">{dest.tagline}</p>
+                      <p className="text-slate-500 text-sm mb-4 leading-snug">{dest.tagline || (dest as any).title || (dest as any).description}</p>
                       
                       <div className="mt-auto space-y-2 mb-5">
                         <div className="flex items-center gap-2 text-sm text-slate-600">
