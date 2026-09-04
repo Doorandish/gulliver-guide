@@ -33,11 +33,8 @@ export default function DiscoveryResults({ suggestions, onSelect, isLoading, ori
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-xl font-bold text-white mb-1">{s.destination}</h3>
-                  <p className="text-forest-100 text-sm">{s.tagline}</p>
+                  <p className="text-forest-100 text-sm">{s.title}</p>
                 </div>
-                <span className="bg-white/20 rounded-lg px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-                  {s.category}
-                </span>
               </div>
             </div>
 
@@ -46,7 +43,7 @@ export default function DiscoveryResults({ suggestions, onSelect, isLoading, ori
               <div className="flex flex-wrap gap-3 text-sm text-slate-600">
                 <span className="flex items-center gap-1.5">
                   <Train size={15} className="text-forest-500" />
-                  {s.travelTimeHours}h Zugfahrt
+                  {s.trainDuration} Zugfahrt
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Wallet size={15} className="text-amber-500" />
@@ -54,14 +51,13 @@ export default function DiscoveryResults({ suggestions, onSelect, isLoading, ori
                 </span>
               </div>
 
-              {/* Highlights */}
+              {/* Highlights & Description */}
               <div className="space-y-1.5">
-                {s.highlights.slice(0, 3).map((h, j) => (
-                  <div key={j} className="flex items-center gap-2 text-sm text-slate-600">
-                    <MapPin size={13} className="text-forest-400 shrink-0" />
-                    <span>{h}</span>
-                  </div>
-                ))}
+                <p className="text-sm text-slate-600 mb-2">{s.description}</p>
+                <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                  <MapPin size={13} className="text-forest-400 shrink-0" />
+                  <span>{s.highlightActivity}</span>
+                </div>
               </div>
 
               {/* CTA */}

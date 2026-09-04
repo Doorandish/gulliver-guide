@@ -130,16 +130,26 @@ export const discoverTrips = async (req: Request, res: Response) => {
 
     const cacheKey = `discover:${generateSlug(origin)}:${generateSlug(weekend || 'this')}:${generateSlug(budget || 'any')}:${generateSlug(style || 'any')}`;
 
-    // Check Redis cache
-    const cached = await redisClient.get(cacheKey);
+    // Check Redis cache (bypass on error)
+    let cached = null;
+    try {
+      cached = await redisClient.get(cacheKey);
+    } catch (redisErr) {
+      console.warn('Redis cache get failed, bypassing:', redisErr);
+    }
+    
     if (cached) {
       return res.json(JSON.parse(cached));
     }
 
     const suggestions = await discoverDestinations(origin, weekend || 'Dieses Wochenende', budget, style);
 
-    // Cache for 24 hours (discovery is more dynamic)
-    await redisClient.setex(cacheKey, 86400, JSON.stringify({ suggestions }));
+    // Cache for 24 hours (discovery is more dynamic) (bypass on error)
+    try {
+      await redisClient.setex(cacheKey, 86400, JSON.stringify({ suggestions }));
+    } catch (redisErr) {
+      console.warn('Redis cache set failed, ignoring:', redisErr);
+    }
 
     return res.json({ suggestions });
   } catch (error) {
