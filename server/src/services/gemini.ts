@@ -37,6 +37,7 @@ const CANDIDATE_MODELS = [
   'gemini-2.0-flash',
   'gemini-1.5-flash',
   'gemini-1.5-pro',
+  'gemini-1.0-pro',
   'gemini-pro'
 ];
 
@@ -51,10 +52,11 @@ export async function generateWithGemini(prompt: string, systemInstruction?: str
 
   for (const modelName of CANDIDATE_MODELS) {
     try {
-      const model = genAI.getGenerativeModel(
-        { model: modelName, systemInstruction },
-        { apiVersion: 'v1beta' }
-      );
+      const modelConfig: any = { model: modelName };
+      if (systemInstruction) {
+        modelConfig.systemInstruction = systemInstruction;
+      }
+      const model = genAI.getGenerativeModel(modelConfig);
 
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -68,11 +70,8 @@ export async function generateWithGemini(prompt: string, systemInstruction?: str
       if (text) return { text, modelUsed: modelName };
     } catch (err: any) {
       lastError = err;
-      // Try next model if 404
-      if (err?.status === 404 || err?.message?.includes('not found')) {
-        continue;
-      }
-      throw err;
+      console.warn(`Model ${modelName} failed:`, err.message);
+      continue;
     }
   }
 
