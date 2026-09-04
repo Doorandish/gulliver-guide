@@ -115,9 +115,9 @@ export const planTrip = async (req: Request, res: Response) => {
     await redisClient.setex(`trip:${slug}`, 604800, JSON.stringify(trip));
 
     return res.status(201).json(trip);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error planning trip:', error);
-    return res.status(500).json({ error: 'Failed to plan trip' });
+    return res.status(500).json({ error: true, message: error.message, stack: error.stack });
   }
 };
 

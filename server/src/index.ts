@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import './utils/logger';
 import { applySecurityMiddleware } from './middleware/security';
 import apiRoutes from './routes/api.routes';
 import { connectDB } from './config/db';
