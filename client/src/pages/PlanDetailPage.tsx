@@ -64,6 +64,7 @@ export default function PlanDetailPage() {
   }
 
   const { saturday, sunday } = getNextWeekendDates();
+  const heroBgUrl = trip ? `/api/places/photo?query=${encodeURIComponent(trip.destination + ' germany')}` : '';
 
   return (
     <>
@@ -74,9 +75,12 @@ export default function PlanDetailPage() {
       />
       
       <div className="bg-slate-50 min-h-screen font-sans">
-        {/* Modern Hero Section with Gradient */}
-        <div className="relative bg-gradient-to-br from-forest-800 to-forest-900 text-white pb-24 pt-12 overflow-hidden shadow-inner">
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+        {/* Modern Hero Section with Image Background */}
+        <div 
+          className="relative text-white pb-24 pt-12 overflow-hidden shadow-inner bg-forest-900 bg-cover bg-center"
+          style={{ backgroundImage: `url("${heroBgUrl}")` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent"></div>
           
           <div className="max-w-4xl mx-auto px-4 relative z-10">
             <Link to="/" className="inline-flex items-center gap-2 text-forest-200 hover:text-white transition-colors mb-8 text-sm font-medium bg-forest-800/50 py-1.5 px-3 rounded-full border border-forest-700/50 backdrop-blur-sm">
