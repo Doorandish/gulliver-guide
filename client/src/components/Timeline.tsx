@@ -53,7 +53,7 @@ export default function Timeline({ days, destination }: TimelineProps) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4">
+    <div className="w-full mx-auto py-8 px-2 md:px-4">
       {days.map((day, dayIndex) => (
         <div key={dayIndex} className="mb-12 last:mb-0">
           <h2 className="text-2xl font-bold text-forest-800 mb-8 border-b-2 border-forest-100 pb-2">
@@ -76,11 +76,11 @@ export default function Timeline({ days, destination }: TimelineProps) {
                     <ImageWithShimmer 
                       src={`/api/places/photo?query=${encodeURIComponent(activity.title + ' ' + destination)}`}
                       alt={activity.title}
-                      className="md:w-[240px] h-48 md:h-auto flex-shrink-0"
+                      className="md:w-[200px] h-48 md:h-auto flex-shrink-0"
                       categoryBadge={getCategoryBadge(activity.category)}
                     />
                     
-                    <div className="p-6 flex flex-col flex-grow">
+                    <div className="p-5 flex flex-col flex-grow">
                       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3 mb-3">
                         <div>
                           <span className="inline-block px-2 py-1 bg-forest-50 text-forest-700 text-xs font-bold uppercase tracking-wider rounded mb-2">

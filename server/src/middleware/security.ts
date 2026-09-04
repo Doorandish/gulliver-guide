@@ -11,7 +11,7 @@ export const applySecurityMiddleware = (app: Application) => {
       directives: {
         defaultSrc: ["'self'"],
         fontSrc: ["'self'", 'fonts.googleapis.com', 'fonts.gstatic.com'],
-        imgSrc: ["'self'", 'images.unsplash.com', 'data:', 'blob:'],
+        imgSrc: ["'self'", 'images.unsplash.com', 'maps.googleapis.com', '*.openweathermap.org', 'openweathermap.org', 'data:', 'blob:'],
         styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com'],
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
         connectSrc: ["'self'", 'api.unsplash.com']
