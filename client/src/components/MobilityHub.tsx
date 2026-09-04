@@ -1,4 +1,4 @@
-import { Train, Bus, Car, ExternalLink } from 'lucide-react';
+import { Train, Bus, Car, Bed, ExternalLink } from 'lucide-react';
 
 interface MobilityHubProps {
   to: string;
@@ -22,11 +22,13 @@ export default function MobilityHub({ to, saturday, sunday }: MobilityHubProps) 
   const flixbusUrl = `https://shop.flixbus.de/search?departureCity=Munich&arrivalCity=${encodeURIComponent(to)}&rideDate=${formattedDeparture}`;
   const blablacarUrl = `https://www.blablacar.de/search?fn=München&tn=${encodeURIComponent(to)}&db=${departureDateDb}`;
 
+  const bookingUrl = `https://www.booking.com/searchresults.de.html?ss=${encodeURIComponent(to)}&checkin=${departureDateDb}&checkout=${returnDateDb}`;
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-10 w-full mx-auto">
-      <h2 className="text-xl font-bold text-slate-800 mb-4 text-center">Multi-Modal Mobility Hub</h2>
+      <h2 className="text-xl font-bold text-slate-800 mb-4 text-center">Anreise & Unterkunft</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Deutsche Bahn */}
         <a 
           href={dbahnUrl}
@@ -120,6 +122,38 @@ export default function MobilityHub({ to, saturday, sunday }: MobilityHubProps) 
           </div>
           <button className="w-full mt-auto py-1.5 px-3 bg-blue-50 text-blue-700 font-medium text-sm rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors flex items-center justify-center gap-2">
             Mitfahrt suchen <ExternalLink size={14} />
+          </button>
+        </a>
+
+        {/* Booking.com */}
+        <a 
+          href={bookingUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex flex-col p-4 rounded-xl border border-slate-100 hover:border-indigo-400 hover:bg-indigo-50/30 transition-all cursor-pointer h-full shadow-sm hover:shadow"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform flex-shrink-0">
+              <Bed size={20} />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 leading-tight">Booking.com</h3>
+              <p className="text-slate-500 text-xs">Hotels & Unterkünfte</p>
+            </div>
+          </div>
+          
+          <div className="space-y-1 w-full mt-auto mb-4 bg-slate-50 p-2 rounded-lg border border-slate-100">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Check-in:</span>
+              <span className="font-semibold text-slate-800">{formattedDeparture}</span>
+            </div>
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-600">Check-out:</span>
+              <span className="font-semibold text-slate-800">{formattedReturn}</span>
+            </div>
+          </div>
+          <button className="w-full mt-auto py-1.5 px-3 bg-indigo-50 text-indigo-700 font-medium text-sm rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors flex items-center justify-center gap-2">
+            Hotel buchen <ExternalLink size={14} />
           </button>
         </a>
       </div>
