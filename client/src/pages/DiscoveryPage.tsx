@@ -75,6 +75,32 @@ export default function DiscoveryPage() {
 
   const handleCreatePlan = async (destination: string) => {
     setPlanningDest(destination);
+    
+    // Open the tab immediately during the click event to bypass popup blockers
+    const newWindow = window.open('about:blank', '_blank');
+    if (newWindow) {
+      newWindow.document.write(`
+        <html lang="de">
+          <head>
+            <meta charset="utf-8">
+            <title>Lade Reiseplan...</title>
+            <style>
+              body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f8fafc; font-family: system-ui, sans-serif; color: #166534; }
+              .loader { font-size: 1.25rem; font-weight: 500; display: flex; flex-direction: column; items-center; gap: 1rem; text-align: center; }
+              .spinner { width: 40px; height: 40px; border: 4px solid #dcfce7; border-top-color: #166534; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+              @keyframes spin { to { transform: rotate(360deg); } }
+            </style>
+          </head>
+          <body>
+            <div class="loader">
+              <div class="spinner"></div>
+              <div>Dein 48h-Plan für ${destination} wird generiert...</div>
+            </div>
+          </body>
+        </html>
+      `);
+    }
+
     try {
       const res = await fetch('/api/trips/plan', {
         method: 'POST',
@@ -83,11 +109,17 @@ export default function DiscoveryPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        navigate(`/wochenendtrip/${data.slug}`);
+        if (newWindow) {
+          newWindow.location.href = `/wochenendtrip/${data.slug}`;
+        } else {
+          window.open(`/wochenendtrip/${data.slug}`, '_blank');
+        }
       } else {
-        alert('Ein Fehler ist aufgetreten.');
+        if (newWindow) newWindow.close();
+        alert('Ein Fehler ist aufgetreten beim Erstellen des Plans.');
       }
     } catch (err) {
+      if (newWindow) newWindow.close();
       alert('Ein Fehler ist aufgetreten.');
     } finally {
       setPlanningDest(null);
