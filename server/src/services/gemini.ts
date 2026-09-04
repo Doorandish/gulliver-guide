@@ -25,11 +25,12 @@ export interface TripPlanData {
 
 export interface DiscoverySuggestion {
   destination: string;
-  title: string;
-  description: string;
+  tagline: string;
+  category: string;
   trainDuration: string;
+  directTrain: boolean;
   estimatedBudget: number;
-  highlightActivity: string;
+  photoQuery: string;
 }
 
 const CANDIDATE_MODELS = [
@@ -136,17 +137,18 @@ export const discoverDestinations = async (
     "suggestions": [
       {
         "destination": "string",
-        "title": "string",
-        "description": "string",
+        "tagline": "string",
+        "category": "Kultur & Geschichte|Natur & Wandern|Romantik & Altstadt|Wellness & Genuss",
         "trainDuration": "string",
+        "directTrain": "boolean",
         "estimatedBudget": "number",
-        "highlightActivity": "string"
+        "photoQuery": "string"
       }
     ]
   }`;
 
-  const systemInstruction = 'Du bist ein Experte für Wochenendreisen in Deutschland per Bahn. Schlage ein JSON Array mit genau 3 unterschiedlichen Reisezielen vor, die per Zug vom Abfahrtsort gut erreichbar sind. Antworte nur mit echten Städten und authentischen Sehenswürdigkeiten.';
-  const prompt = `Schlage ein JSON Array mit 3 perfekten Wochenendzielen vor für eine Zugreise ab ${origin} (z.B. ab München -> Salzburg, Regensburg, Garmisch-Partenkirchen). Zeitraum: ${weekend}.${budgetHint}${styleHint} Nur echte deutsche Städte und Attraktionen. Alles auf Deutsch. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
+  const systemInstruction = 'Du bist ein Experte für Wochenendreisen in Deutschland per Bahn. Schlage ein JSON Array mit genau 8 unterschiedlichen Reisezielen vor, die per Zug vom Abfahrtsort gut erreichbar sind. Antworte nur mit echten Städten und authentischen Sehenswürdigkeiten. Alle Budget-Angaben als positive Zahl (z.B. 160). photoQuery ist der Name einer ikonischen Sehenswürdigkeit (z.B. "Altes Rathaus Bamberg").';
+  const prompt = `Schlage ein JSON Array mit genau 8 perfekten Wochenendzielen vor für eine Zugreise ab ${origin} (z.B. ab München -> Bamberg, Regensburg, Würzburg etc). Zeitraum: ${weekend}.${budgetHint}${styleHint} Nur echte deutsche Städte und Attraktionen. Alles auf Deutsch. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
 
   const geminiResponse = await generateWithGemini(prompt, systemInstruction);
   

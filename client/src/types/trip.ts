@@ -27,9 +27,10 @@ export interface TripPlan {
 
 export interface DiscoverySuggestion {
   destination: string;
-  title: string;
-  description: string;
+  tagline: string;
+  category: string;
   trainDuration: string;
+  directTrain: boolean;
   estimatedBudget: number;
-  highlightActivity: string;
+  photoQuery: string;
 }

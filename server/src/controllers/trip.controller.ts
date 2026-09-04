@@ -182,9 +182,9 @@ export const discoverTrips = async (req: Request, res: Response) => {
 
     const suggestions = await discoverDestinations(origin, weekend || 'Dieses Wochenende', budget, style);
 
-    // Cache for 24 hours (discovery is more dynamic) (bypass on error)
+    // Cache for 7 days
     try {
-      await redisClient.setex(cacheKey, 86400, JSON.stringify({ suggestions }));
+      await redisClient.setex(cacheKey, 604800, JSON.stringify({ suggestions }));
     } catch (redisErr) {
       console.warn('Redis cache set failed, ignoring:', redisErr);
     }
