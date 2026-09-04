@@ -28,12 +28,13 @@ export const getSystemLogs = async (req: Request, res: Response) => {
 export const testGeminiConnection = async (req: Request, res: Response) => {
   try {
     const { generateWithGemini } = await import('../services/gemini');
-    const responseText = await generateWithGemini('Respond with JSON: {"ping": "pong"}');
+    const responseObj = await generateWithGemini('Respond with JSON: {"ping": "pong"}');
     
     return res.json({
       status: 200,
       ok: true,
-      data: JSON.parse(responseText)
+      modelUsed: responseObj.modelUsed,
+      data: JSON.parse(responseObj.text)
     });
   } catch (error: any) {
     return res.status(500).json({

@@ -32,23 +32,51 @@ export interface DiscoverySuggestion {
   highlightActivity: string;
 }
 
-export async function generateWithGemini(prompt: string, systemInstruction?: string): Promise<string> {
+const CANDIDATE_MODELS = [
+  'gemini-1.5-flash-latest',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+  'gemini-pro'
+];
+
+export async function generateWithGemini(prompt: string, systemInstruction?: string): Promise<{ text: string, modelUsed: string }> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY is not set');
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-    systemInstruction,
-    generationConfig: {
-      responseMimeType: 'application/json'
-    }
-  });
+  let lastError: any = null;
 
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+  for (const modelName of CANDIDATE_MODELS) {
+    try {
+      const model = genAI.getGenerativeModel(
+        { model: modelName, systemInstruction },
+        { apiVersion: 'v1beta' }
+      );
+
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.7
+        }
+      });
+
+      const text = result.response.text();
+      if (text) return { text, modelUsed: modelName };
+    } catch (err: any) {
+      lastError = err;
+      // Try next model if 404
+      if (err?.status === 404 || err?.message?.includes('not found')) {
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  throw lastError || new Error('No compatible Gemini model found for this API key.');
 }
 
 export const generateItinerary = async (destination: string): Promise<TripPlanData> => {
@@ -80,8 +108,8 @@ export const generateItinerary = async (destination: string): Promise<TripPlanDa
   const systemInstruction = 'Act as an expert German travel planner. Generate a weekend trip itinerary. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation.';
   const prompt = `Act as an expert German travel planner. Generate a weekend trip itinerary for ${destination}. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
 
-  let text = await generateWithGemini(prompt, systemInstruction);
-  text = text.replace(/^```json/m, '').replace(/^```/m, '').trim();
+  const geminiResponse = await generateWithGemini(prompt, systemInstruction);
+  let text = geminiResponse.text.replace(/^```json/m, '').replace(/^```/m, '').trim();
   
   return JSON.parse(text) as TripPlanData;
 };
@@ -111,8 +139,8 @@ export const discoverDestinations = async (
   const systemInstruction = 'Du bist ein Experte für Wochenendreisen in Deutschland per Bahn. Schlage ein JSON Array mit genau 3 unterschiedlichen Reisezielen vor, die per Zug vom Abfahrtsort gut erreichbar sind. Antworte nur mit echten Städten und authentischen Sehenswürdigkeiten.';
   const prompt = `Schlage ein JSON Array mit 3 perfekten Wochenendzielen vor für eine Zugreise ab ${origin} (z.B. ab München -> Salzburg, Regensburg, Garmisch-Partenkirchen). Zeitraum: ${weekend}.${budgetHint}${styleHint} Nur echte deutsche Städte und Attraktionen. Alles auf Deutsch. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
 
-  let text = await generateWithGemini(prompt, systemInstruction);
-  text = text.replace(/^```json/m, '').replace(/^```/m, '').trim();
+  const geminiResponse = await generateWithGemini(prompt, systemInstruction);
+  let text = geminiResponse.text.replace(/^```json/m, '').replace(/^```/m, '').trim();
   const parsed = JSON.parse(text);
   
   return parsed.suggestions as DiscoverySuggestion[];
