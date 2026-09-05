@@ -26,13 +26,16 @@ const ImageWithShimmer = ({ src, alt, className, categoryBadge }: { src: string,
 };
 
 export default function Timeline({ days, destination }: TimelineProps) {
-  const getIcon = (timeSlot: string) => {
-    switch (timeSlot) {
-      case 'Morgen': return <Sunrise size={20} className="text-amber-500" />;
-      case 'Nachmittag': return <Sun size={20} className="text-amber-500" />;
-      case 'Abend': return <Moon size={20} className="text-forest-600" />;
-      default: return <Sun size={20} />;
+  const getIcon = (timeStr: string) => {
+    if (!timeStr) return <Sun size={20} />;
+    const lower = timeStr.toLowerCase();
+    if (lower.includes('morgen') || timeStr.startsWith('06') || timeStr.startsWith('07') || timeStr.startsWith('08') || timeStr.startsWith('09') || timeStr.startsWith('10')) {
+      return <Sunrise size={20} className="text-amber-500" />;
     }
+    if (lower.includes('abend') || lower.includes('nacht') || timeStr.startsWith('18') || timeStr.startsWith('19') || timeStr.startsWith('20') || timeStr.startsWith('21') || timeStr.startsWith('22')) {
+      return <Moon size={20} className="text-forest-600" />;
+    }
+    return <Sun size={20} className="text-amber-500" />;
   };
 
   const getCategoryBadge = (category: string) => {
@@ -69,7 +72,7 @@ export default function Timeline({ days, destination }: TimelineProps) {
                 <div key={actIndex} className="relative pl-8 md:pl-10 group">
                   {/* Timeline Dot with Icon */}
                   <div className="absolute -left-[17px] top-1 bg-white border-2 border-forest-300 rounded-full p-1 shadow-sm group-hover:border-amber-400 group-hover:scale-110 transition-all">
-                    {getIcon(activity.timeSlot)}
+                    {getIcon((activity as any).timeSlot || activity.time)}
                   </div>
                   
                   <div className="bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow flex flex-col md:flex-row overflow-hidden">
@@ -83,8 +86,8 @@ export default function Timeline({ days, destination }: TimelineProps) {
                     <div className="p-5 flex flex-col flex-grow">
                       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3 mb-3">
                         <div>
-                          <span className="inline-block px-2 py-1 bg-forest-50 text-forest-700 text-xs font-bold uppercase tracking-wider rounded mb-2">
-                            {activity.timeSlot}
+                          <span className="inline-block px-2 py-1 bg-forest-50 text-forest-700 text-xs font-bold tracking-wider rounded mb-2 border border-forest-100">
+                            {activity.time || (activity as any).timeSlot}
                           </span>
                           <h3 className="text-xl font-bold text-slate-800 leading-tight">{activity.title}</h3>
                         </div>

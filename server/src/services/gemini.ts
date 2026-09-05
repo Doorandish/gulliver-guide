@@ -1,5 +1,15 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+export interface JourneyDetails {
+  departureTime: string;
+  arrivalTime: string;
+  trainType: string;
+  transfers: number;
+  transferBuffer?: string;
+  lastMile?: string;
+  arrivalHomeAdvice?: string;
+}
+
 export interface TripPlanData {
   slug?: string;
   destination: string;
@@ -8,11 +18,13 @@ export interface TripPlanData {
   totalBudget: number;
   co2SavedPercent: number;
   recommendedTrain: string;
+  outboundJourney?: JourneyDetails;
+  inboundJourney?: JourneyDetails;
   days: {
     dayNumber: number;
     title: string;
     activities: {
-      timeSlot: 'Morgen' | 'Nachmittag' | 'Abend';
+      time: string;
       title: string;
       description: string;
       rainAlternative?: string;
@@ -88,6 +100,22 @@ export const generateItinerary = async (destination: string, hasDt?: boolean, fr
     "totalBudget": "number",
     "co2SavedPercent": "number",
     "recommendedTrain": "string",
+    "outboundJourney": {
+      "departureTime": "string",
+      "arrivalTime": "string",
+      "trainType": "string",
+      "transfers": "number",
+      "transferBuffer": "string",
+      "lastMile": "string"
+    },
+    "inboundJourney": {
+      "departureTime": "string",
+      "arrivalTime": "string",
+      "trainType": "string",
+      "transfers": "number",
+      "transferBuffer": "string",
+      "arrivalHomeAdvice": "string"
+    },
     "metaTitle": "string",
     "metaDescription": "string",
     "days": [
@@ -96,7 +124,7 @@ export const generateItinerary = async (destination: string, hasDt?: boolean, fr
         "title": "string",
         "activities": [
           {
-            "timeSlot": "Morgen|Nachmittag|Abend",
+            "time": "string",
             "title": "string",
             "description": "string",
             "rainAlternative": "string",
@@ -108,11 +136,11 @@ export const generateItinerary = async (destination: string, hasDt?: boolean, fr
     ]
   }`;
 
-  let systemInstruction = 'Du bist ein Experte für realistische, stressfreie Bahnreisen in Deutschland (r/reisende Niveau). Generiere einen Wochenend-Reiseplan. Berechne nettoHoursAtDestination (48h abzüglich Hin-/Rückfahrt). "Last Mile" Garantie: Erkläre bei der ersten Aktivität nach Ankunft, wie man vom Hbf ins Zentrum kommt (z.B. "5 Min. Fußweg"). Regen-Plan B: Jede Aktivität im Freien MUSS eine rainAlternative haben (Museum, Café, etc). Puffer am Sonntagabend: Plane das Ende stressfrei und warne vor knappen Umstiegen. WICHTIG: Wenn die Abfahrt am späten Freitagnachmittag/Abend erfolgt, MUSS Tag 1 zwingend am "Abend" beginnen (keine Aktivitäten am Freitagmorgen!). Alles auf Deutsch.';
-  let prompt = `Plane einen stressfreien Wochenendtrip nach ${destination}.${fridayStart ? ` Abfahrt am Freitag: ${fridayStart}. Daher beginnt Tag 1 erst am späten Nachmittag oder Abend! Plane am Tag 1 KEINE Aktivitäten für den Morgen.` : ''} Nur authentische Orte. Budget in EUR. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
+  let systemInstruction = 'Du bist ein Experte für realistische Bahnreisen in Deutschland (r/reisende Niveau). Generiere einen Reiseplan. Berechne nettoHoursAtDestination. Erstelle eine detaillierte outboundJourney (Hinfahrt am Freitag) und inboundJourney (Rückreise am Sonntag). "Last Mile": Erkläre in outboundJourney.lastMile, wie man vom Hbf zur Unterkunft kommt. Regen-Plan B: Outdoor-Aktivitäten brauchen eine rainAlternative. Puffer am Sonntagabend: Plane entspannt in inboundJourney.arrivalHomeAdvice. Der Tag MUSS granular nach Stunden geplant werden (time z.B. "09:30 - 11:00 Uhr"). Tag 1 (Freitag) hat 2 Aktivitäten (Check-in, Abendessen). Tag 2 (Samstag) hat 5 verschiedene Aktivitäten. Tag 3 (Sonntag) hat 4 Aktivitäten bis zur Abfahrt.';
+  let prompt = `Plane einen stressfreien Wochenendtrip nach ${destination}.${fridayStart ? ` Abfahrt am Freitag: ${fridayStart}.` : ''} Nur authentische Orte. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
 
   if (hasDt) {
-    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze AUSSCHLIESSLICH Regionalzüge (RE, RB, S-Bahn), KEINE ICE/IC/EC. Vermeide stressige, unrealistische Verbindungen. Fahrtkosten für den Zug sind 0€ im Gesamtbudget.';
+    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze AUSSCHLIESSLICH Regionalzüge (RE, RB). Zugkosten=0€. Plane längere realistische Fahrzeiten.';
     systemInstruction += dtInstruction;
     prompt += dtInstruction;
   }

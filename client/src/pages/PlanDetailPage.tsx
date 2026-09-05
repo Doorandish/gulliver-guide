@@ -4,6 +4,8 @@ import { ArrowLeft, Clock, Wallet, Leaf, CloudSun, Printer } from 'lucide-react'
 import SeoHead from '../components/SeoHead';
 import Timeline from '../components/Timeline';
 import MobilityHub from '../components/MobilityHub';
+import HinfahrtBox from '../components/HinfahrtBox';
+import RueckfahrtBox from '../components/RueckfahrtBox';
 import Footer from '../components/Footer';
 import { TripPlan } from '../types/trip';
 import { getNextWeekendDates } from '../utils/deeplinks';
@@ -146,7 +148,9 @@ export default function PlanDetailPage() {
             saturday={saturday} 
             sunday={sunday} 
           />
+          {trip.outboundJourney && <HinfahrtBox journey={trip.outboundJourney} />}
           <Timeline days={trip.days} destination={trip.destination} />
+          {trip.inboundJourney && <RueckfahrtBox journey={trip.inboundJourney} />}
         </main>
         
         <Footer />
