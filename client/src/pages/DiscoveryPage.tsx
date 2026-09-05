@@ -50,8 +50,8 @@ export default function DiscoveryPage() {
       return;
     }
 
-    const fetchDiscoveries = async () => {
-      setIsLoading(true);
+    const fetchDiscoveries = async (retryCount = 0) => {
+      if (retryCount === 0) setIsLoading(true);
       setError(false);
       try {
         const res = await fetch('/api/trips/discover', {
@@ -62,12 +62,25 @@ export default function DiscoveryPage() {
         if (res.ok) {
           const data = await res.json();
           setDiscoveries(data.suggestions || []);
+          setIsLoading(false);
         } else {
+          if (res.status === 503 || res.status === 504 || res.status >= 500) {
+            if (retryCount < 3) {
+              console.log('Heroku timeout or server error, retrying in 3s...', retryCount);
+              setTimeout(() => fetchDiscoveries(retryCount + 1), 3000);
+              return; // wait for retry
+            }
+          }
           setError(true);
+          setIsLoading(false);
         }
       } catch (err) {
+        if (retryCount < 3) {
+          console.log('Network error, retrying in 3s...', retryCount);
+          setTimeout(() => fetchDiscoveries(retryCount + 1), 3000);
+          return;
+        }
         setError(true);
-      } finally {
         setIsLoading(false);
       }
     };
@@ -103,29 +116,46 @@ export default function DiscoveryPage() {
       `);
     }
 
-    try {
-      const res = await fetch('/api/trips/plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ origin, destination, budget, style, hasDt, fridayStart }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (newWindow) {
-          newWindow.location.href = `/wochenendtrip/${data.slug}`;
+    const tryPlan = async (retryCount = 0) => {
+      try {
+        const res = await fetch('/api/trips/plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ origin, destination, budget, style, hasDt, fridayStart }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (newWindow) {
+            newWindow.location.href = `/wochenendtrip/${data.slug}`;
+          } else {
+            window.open(`/wochenendtrip/${data.slug}`, '_blank');
+          }
+          setPlanningDest(null);
         } else {
-          window.open(`/wochenendtrip/${data.slug}`, '_blank');
+          if (res.status === 503 || res.status === 504 || res.status >= 500) {
+            if (retryCount < 3) {
+              console.log('Timeout generating plan, retrying in 3s...', retryCount);
+              setTimeout(() => tryPlan(retryCount + 1), 3000);
+              return;
+            }
+          }
+          if (newWindow) newWindow.close();
+          alert('Ein Fehler ist aufgetreten beim Erstellen des Plans.');
+          setPlanningDest(null);
         }
-      } else {
+      } catch (err) {
+        if (retryCount < 3) {
+          console.log('Network error generating plan, retrying in 3s...', retryCount);
+          setTimeout(() => tryPlan(retryCount + 1), 3000);
+          return;
+        }
         if (newWindow) newWindow.close();
-        alert('Ein Fehler ist aufgetreten beim Erstellen des Plans.');
+        alert('Ein Fehler ist aufgetreten.');
+        setPlanningDest(null);
       }
-    } catch (err) {
-      if (newWindow) newWindow.close();
-      alert('Ein Fehler ist aufgetreten.');
-    } finally {
-      setPlanningDest(null);
-    }
+    };
+
+    tryPlan();
   };
 
   const getCategoryEmoji = (cat?: string) => {

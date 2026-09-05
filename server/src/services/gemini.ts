@@ -101,9 +101,9 @@ export const generateItinerary = async (destination: string, hasDt?: boolean, fr
     "co2SavedPercent": "number",
     "recommendedTrain": "string",
     "outboundJourney": {
-      "departureTime": "string",
+      "departureTime": "string (MUST be at or after user's friday start time)",
       "arrivalTime": "string",
-      "trainType": "string",
+      "trainType": "string (${hasDt ? 'ONLY RE/RB/S-Bahn, NO ICE/IC' : 'Any train'})",
       "transfers": "number",
       "transferBuffer": "string",
       "lastMile": "string"
@@ -111,7 +111,7 @@ export const generateItinerary = async (destination: string, hasDt?: boolean, fr
     "inboundJourney": {
       "departureTime": "string",
       "arrivalTime": "string",
-      "trainType": "string",
+      "trainType": "string (${hasDt ? 'ONLY RE/RB/S-Bahn, NO ICE/IC' : 'Any train'})",
       "transfers": "number",
       "transferBuffer": "string",
       "arrivalHomeAdvice": "string"
@@ -137,10 +137,10 @@ export const generateItinerary = async (destination: string, hasDt?: boolean, fr
   }`;
 
   let systemInstruction = 'Du bist ein Experte für realistische Bahnreisen in Deutschland (r/reisende Niveau). Generiere einen Reiseplan. Berechne nettoHoursAtDestination. Erstelle eine detaillierte outboundJourney (Hinfahrt am Freitag) und inboundJourney (Rückreise am Sonntag). "Last Mile": Erkläre in outboundJourney.lastMile, wie man vom Hbf zur Unterkunft kommt. Regen-Plan B: Outdoor-Aktivitäten brauchen eine rainAlternative. Puffer am Sonntagabend: Plane entspannt in inboundJourney.arrivalHomeAdvice. Der Tag MUSS granular nach Stunden geplant werden (time z.B. "09:30 - 11:00 Uhr"). Tag 1 (Freitag) hat 2 Aktivitäten (Check-in, Abendessen). Tag 2 (Samstag) hat 5 verschiedene Aktivitäten. Tag 3 (Sonntag) hat 4 Aktivitäten bis zur Abfahrt.';
-  let prompt = `Plane einen stressfreien Wochenendtrip nach ${destination}.${fridayStart ? ` Abfahrt am Freitag: ${fridayStart}.` : ''} Nur authentische Orte. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
+  let prompt = `Plane einen stressfreien Wochenendtrip nach ${destination}.${fridayStart ? ` Abfahrt am Freitag: ${fridayStart}. WICHTIG: Die outboundJourney.departureTime DARF NICHT vor ${fridayStart} liegen! (z.B. wenn 16:00, dann Abfahrt ab 16:00 oder später).` : ''} Nur authentische Orte. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
 
   if (hasDt) {
-    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze AUSSCHLIESSLICH Regionalzüge (RE, RB). Zugkosten=0€. Plane längere realistische Fahrzeiten.';
+    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze STRIKT NUR Regionalzüge (RE, RB, S, U). ABSOLUTES VERBOT für ICE, IC, EC! TrainType in JSON MUSS RE/RB sein. Zugkosten=0€. Plane längere realistische Fahrzeiten.';
     systemInstruction += dtInstruction;
     prompt += dtInstruction;
   }
