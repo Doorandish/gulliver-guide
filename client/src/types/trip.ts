@@ -2,6 +2,7 @@ export interface Activity {
   timeSlot: 'Morgen' | 'Nachmittag' | 'Abend';
   title: string;
   description: string;
+  rainAlternative?: string;
   estimatedPrice: number;
   category: string;
   bookingDeepLink?: string;
@@ -17,6 +18,7 @@ export interface TripPlan {
   slug: string;
   destination: string;
   durationDays: number;
+  nettoHoursAtDestination?: number;
   totalBudget: number;
   co2SavedPercent: number;
   recommendedTrain: string;

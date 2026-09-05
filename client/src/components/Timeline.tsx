@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sunrise, Sun, Moon, MapPin, ExternalLink } from 'lucide-react';
+import { Sunrise, Sun, Moon, MapPin, ExternalLink, Umbrella } from 'lucide-react';
 import { TripDay } from '../types/trip';
 
 interface TimelineProps {
@@ -101,9 +101,19 @@ export default function Timeline({ days, destination }: TimelineProps) {
                         </div>
                       </div>
                       
-                      <p className="text-slate-600 leading-relaxed mb-6 flex-grow">
+                      <p className="text-slate-600 leading-relaxed mb-4 flex-grow">
                         {activity.description}
                       </p>
+
+                      {activity.rainAlternative && (
+                        <div className="mb-6 flex items-start gap-2 text-sm bg-blue-50/50 text-blue-800 p-3 rounded-lg border border-blue-100">
+                          <Umbrella size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-semibold block mb-0.5 text-blue-900">Regen-Alternative:</span>
+                            {activity.rainAlternative}
+                          </div>
+                        </div>
+                      )}
                       
                       <div className="flex flex-wrap items-center justify-end gap-3 mt-auto pt-4 border-t border-slate-100">
                         <a 

@@ -9,16 +9,18 @@ import {
   ChevronUp,
   Wallet,
   Palette,
+  Clock,
 } from 'lucide-react';
 
 type TabType = 'destination' | 'inspire';
 type WeekendOption = 'Dieses Wochenende' | 'Nächstes Wochenende' | 'Langes Wochenende';
 type BudgetOption = 'Günstig' | 'Mittel' | 'Komfort';
-type StyleOption = 'Kultur' | 'Natur' | 'Entspannung' | 'Party';
+type StyleOption = 'Kultur' | 'Natur & Wandern' | 'Romantische Altstadt' | 'Schlechtwetter-sicher' | 'Solo-Trip';
+type FridayStartOption = 'Egal' | 'Ab 16:00' | 'Ab 18:00';
 
 interface HeroProps {
-  onPlan: (origin: string, destination: string, budget?: string, style?: string, hasDt?: boolean) => void;
-  onDiscover: (origin: string, weekend: string, budget?: string, style?: string, hasDt?: boolean) => void;
+  onPlan: (origin: string, destination: string, budget?: string, style?: string, hasDt?: boolean, fridayStart?: string) => void;
+  onDiscover: (origin: string, weekend: string, budget?: string, style?: string, hasDt?: boolean, fridayStart?: string) => void;
   isLoading: boolean;
 }
 
@@ -33,16 +35,17 @@ export default function Hero({ onPlan, onDiscover, isLoading }: HeroProps) {
   const [budget, setBudget] = useState<BudgetOption | ''>('');
   const [style, setStyle] = useState<StyleOption | ''>('');
   const [hasDt, setHasDt] = useState(false);
+  const [fridayStart, setFridayStart] = useState<FridayStartOption>('Egal');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (activeTab === 'destination') {
       if (origin.trim() && destination.trim()) {
-        onPlan(origin.trim(), destination.trim(), budget || undefined, style || undefined, hasDt);
+        onPlan(origin.trim(), destination.trim(), budget || undefined, style || undefined, hasDt, fridayStart === 'Egal' ? undefined : fridayStart);
       }
     } else {
       if (origin.trim()) {
-        onDiscover(origin.trim(), weekend, budget || undefined, style || undefined, hasDt);
+        onDiscover(origin.trim(), weekend, budget || undefined, style || undefined, hasDt, fridayStart === 'Egal' ? undefined : fridayStart);
       }
     }
   };
@@ -244,13 +247,37 @@ export default function Hero({ onPlan, onDiscover, isLoading }: HeroProps) {
                       Reisestil
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {(['Kultur', 'Natur', 'Entspannung', 'Party'] as StyleOption[]).map((opt) => (
+                      {(['Kultur', 'Natur & Wandern', 'Romantische Altstadt', 'Schlechtwetter-sicher', 'Solo-Trip'] as StyleOption[]).map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => setStyle(style === opt ? '' : opt)}
                           className={`py-2 px-4 rounded-lg text-sm font-medium border transition-all ${
                             style === opt
+                              ? 'border-forest-500 bg-forest-50 text-forest-700'
+                              : 'border-slate-200 text-slate-500 hover:border-forest-300'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Friday Start */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+                      <Clock size={14} className="inline mr-1" />
+                      Freitag-Startzeit
+                    </label>
+                    <div className="flex gap-2">
+                      {(['Egal', 'Ab 16:00', 'Ab 18:00'] as FridayStartOption[]).map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setFridayStart(opt)}
+                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-all ${
+                            fridayStart === opt
                               ? 'border-forest-500 bg-forest-50 text-forest-700'
                               : 'border-slate-200 text-slate-500 hover:border-forest-300'
                           }`}
@@ -271,8 +298,8 @@ export default function Hero({ onPlan, onDiscover, isLoading }: HeroProps) {
                         className="w-5 h-5 rounded text-forest-600 focus:ring-forest-500 border-slate-300"
                       />
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-slate-700">Deutschlandticket vorhanden</span>
-                        <span className="text-xs text-slate-500">Ausschließlich Regionalzüge (RE/RB), Zug-Kosten = 0€</span>
+                        <span className="text-sm font-semibold text-slate-700">Nur Deutschlandticket (Nahverkehr / RE & RB)</span>
+                        <span className="text-xs text-slate-500">Ausschließlich Regionalzüge, Zug-Kosten = 0€</span>
                       </div>
                     </label>
                   </div>

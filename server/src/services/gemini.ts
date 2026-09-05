@@ -4,6 +4,7 @@ export interface TripPlanData {
   slug?: string;
   destination: string;
   durationDays: number;
+  nettoHoursAtDestination?: number;
   totalBudget: number;
   co2SavedPercent: number;
   recommendedTrain: string;
@@ -14,6 +15,7 @@ export interface TripPlanData {
       timeSlot: 'Morgen' | 'Nachmittag' | 'Abend';
       title: string;
       description: string;
+      rainAlternative?: string;
       estimatedPrice: number;
       category: string;
       bookingDeepLink?: string;
@@ -78,10 +80,11 @@ export async function generateWithGemini(prompt: string, systemInstruction?: str
   throw lastError || new Error('No compatible Gemini model found for this API key.');
 }
 
-export const generateItinerary = async (destination: string, hasDt?: boolean): Promise<TripPlanData> => {
+export const generateItinerary = async (destination: string, hasDt?: boolean, fridayStart?: string): Promise<TripPlanData> => {
   const schemaStr = `{
     "destination": "string",
     "durationDays": "number",
+    "nettoHoursAtDestination": "number",
     "totalBudget": "number",
     "co2SavedPercent": "number",
     "recommendedTrain": "string",
@@ -96,6 +99,7 @@ export const generateItinerary = async (destination: string, hasDt?: boolean): P
             "timeSlot": "Morgen|Nachmittag|Abend",
             "title": "string",
             "description": "string",
+            "rainAlternative": "string",
             "estimatedPrice": "number",
             "category": "string"
           }
@@ -104,11 +108,11 @@ export const generateItinerary = async (destination: string, hasDt?: boolean): P
     ]
   }`;
 
-  let systemInstruction = 'Act as an expert German travel planner. Generate a weekend trip itinerary. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation.';
-  let prompt = `Act as an expert German travel planner. Generate a weekend trip itinerary for ${destination}. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
+  let systemInstruction = 'Du bist ein Experte für realistische, stressfreie Bahnreisen in Deutschland (r/reisende Niveau). Generiere einen Wochenend-Reiseplan. Berechne nettoHoursAtDestination (48h abzüglich Hin-/Rückfahrt). "Last Mile" Garantie: Erkläre bei der ersten Aktivität nach Ankunft, wie man vom Hbf ins Zentrum kommt (z.B. "5 Min. Fußweg"). Regen-Plan B: Jede Aktivität im Freien MUSS eine rainAlternative haben (Museum, Café, etc). Puffer am Sonntagabend: Plane das Ende stressfrei und warne vor knappen Umstiegen. Alles auf Deutsch.';
+  let prompt = `Plane einen stressfreien Wochenendtrip nach ${destination}.${fridayStart ? ` Abfahrt am Freitag: ${fridayStart}.` : ''} Nur authentische Orte. Budget in EUR. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
 
   if (hasDt) {
-    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze AUSSCHLIESSLICH Regionalzüge (RE, RB, S-Bahn), KEINE ICE/IC/EC. Die Fahrtkosten für Züge betragen 0€ im Gesamtbudget.';
+    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze AUSSCHLIESSLICH Regionalzüge (RE, RB, S-Bahn), KEINE ICE/IC/EC. Vermeide stressige, unrealistische Verbindungen. Fahrtkosten für den Zug sind 0€ im Gesamtbudget.';
     systemInstruction += dtInstruction;
     prompt += dtInstruction;
   }
@@ -135,7 +139,8 @@ export const discoverDestinations = async (
   weekend: string,
   budget?: string,
   style?: string,
-  hasDt?: boolean
+  hasDt?: boolean,
+  fridayStart?: string
 ): Promise<DiscoverySuggestion[]> => {
   const budgetHint = budget ? ` Budget-Niveau: ${budget}.` : '';
   const styleHint = style ? ` Reisestil: ${style}.` : '';
@@ -154,11 +159,11 @@ export const discoverDestinations = async (
     ]
   }`;
 
-  let systemInstruction = 'Du bist ein Experte für Wochenendreisen in Deutschland per Bahn. Schlage ein JSON Array mit genau 8 unterschiedlichen Reisezielen vor, die per Zug vom Abfahrtsort gut erreichbar sind. Antworte nur mit echten Städten und authentischen Sehenswürdigkeiten. Alle Budget-Angaben als positive Zahl (z.B. 160). photoQuery ist der Name einer ikonischen Sehenswürdigkeit (z.B. "Altes Rathaus Bamberg").';
-  let prompt = `Schlage ein JSON Array mit genau 8 perfekten Wochenendzielen vor für eine Zugreise ab ${origin} (z.B. ab München -> Bamberg, Regensburg, Würzburg etc). Zeitraum: ${weekend}.${budgetHint}${styleHint} Nur echte deutsche Städte und Attraktionen. Alles auf Deutsch. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
+  let systemInstruction = 'Du bist ein Experte für Wochenendreisen in Deutschland per Bahn. Schlage ein JSON Array mit genau 8 unterschiedlichen Reisezielen vor. Priorisiere IMMER realistische und kurze Fahrtzeiten vom Abfahrtsort (z.B. von Nürnberg/Ansbach aus: Bamberg, Regensburg, Augsburg, Würzburg). Antworte nur mit echten Städten und authentischen Sehenswürdigkeiten. Alle Budget-Angaben als positive Zahl. photoQuery ist der Name einer ikonischen Sehenswürdigkeit (z.B. "Altes Rathaus Bamberg").';
+  let prompt = `Schlage ein JSON Array mit genau 8 perfekten Wochenendzielen vor für eine Zugreise ab ${origin}. Zeitraum: ${weekend}.${fridayStart ? ` Abfahrt am Freitag: ${fridayStart}.` : ''}${budgetHint}${styleHint} Nur echte deutsche Städte. Priorisiere Ziele, die von ${origin} aus schnell und mit wenig Umstiegen erreichbar sind. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
 
   if (hasDt) {
-    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze AUSSCHLIESSLICH Regionalzüge (RE, RB, S-Bahn), KEINE ICE/IC/EC. Die Fahrtkosten für Züge betragen 0€ im Gesamtbudget. Ziele sollten in 1-4 Stunden erreichbar sein.';
+    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze AUSSCHLIESSLICH Regionalzüge (RE, RB, S-Bahn). Die Fahrtkosten für Züge betragen 0€ im Gesamtbudget. Ziele MÜSSEN in 1-3 Stunden erreichbar sein.';
     systemInstruction += dtInstruction;
     prompt += dtInstruction;
   }

@@ -37,6 +37,7 @@ export default function DiscoveryPage() {
   const budget = searchParams.get('budget') || '';
   const style = searchParams.get('style') || '';
   const hasDt = searchParams.get('dticket') === 'true';
+  const fridayStart = searchParams.get('friday') || undefined;
 
   const [discoveries, setDiscoveries] = useState<DiscoverySuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +57,7 @@ export default function DiscoveryPage() {
         const res = await fetch('/api/trips/discover', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ origin, weekend, budget, style, hasDt }),
+          body: JSON.stringify({ origin, weekend, budget, style, hasDt, fridayStart }),
         });
         if (res.ok) {
           const data = await res.json();
@@ -106,7 +107,7 @@ export default function DiscoveryPage() {
       const res = await fetch('/api/trips/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ origin, destination, budget, style, hasDt }),
+        body: JSON.stringify({ origin, destination, budget, style, hasDt, fridayStart }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -202,7 +203,7 @@ export default function DiscoveryPage() {
                       />
                       <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5">
                         <Train size={12} className={dest.directTrain ? "text-green-400" : "text-amber-400"} />
-                        {dest.trainDuration} {dest.directTrain && "(Direkt)"}
+                        {dest.trainDuration} {dest.directTrain && "(0 Umstiege)"}
                       </div>
                     </div>
 

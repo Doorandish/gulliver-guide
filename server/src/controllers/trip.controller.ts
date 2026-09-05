@@ -106,13 +106,13 @@ export const getHealth = (req: Request, res: Response) => {
 
 export const planTrip = async (req: Request, res: Response) => {
   try {
-    const { origin, destination, hasDt } = req.body;
+    const { origin, destination, hasDt, fridayStart } = req.body;
     if (!destination) {
       return res.status(400).json({ error: 'Destination is required' });
     }
 
     const baseSlug = generateSlug(destination);
-    const slug = `${baseSlug}-mit-der-bahn${hasDt ? '-dticket' : ''}`;
+    const slug = `${baseSlug}-mit-der-bahn${hasDt ? '-dticket' : ''}${fridayStart ? '-' + generateSlug(fridayStart) : ''}`;
 
     // 1. Check Redis Cache
     let cachedTrip = null;
@@ -161,12 +161,12 @@ export const planTrip = async (req: Request, res: Response) => {
 
 export const discoverTrips = async (req: Request, res: Response) => {
   try {
-    const { origin, weekend, budget, style, hasDt } = req.body;
+    const { origin, weekend, budget, style, hasDt, fridayStart } = req.body;
     if (!origin) {
       return res.status(400).json({ error: 'Origin is required' });
     }
 
-    const cacheKey = `discover:${generateSlug(origin)}:${generateSlug(weekend || 'this')}:${generateSlug(budget || 'any')}:${generateSlug(style || 'any')}:${hasDt ? 'dt' : 'no-dt'}`;
+    const cacheKey = `discover:${generateSlug(origin)}:${generateSlug(weekend || 'this')}:${generateSlug(budget || 'any')}:${generateSlug(style || 'any')}:${hasDt ? 'dt' : 'no-dt'}:${fridayStart ? generateSlug(fridayStart) : 'any'}`;
 
     // Check Redis cache (bypass on error)
     let cached = null;
@@ -180,7 +180,7 @@ export const discoverTrips = async (req: Request, res: Response) => {
       return res.json(JSON.parse(cached));
     }
 
-    const suggestions = await discoverDestinations(origin, weekend || 'Dieses Wochenende', budget, style, hasDt);
+    const suggestions = await discoverDestinations(origin, weekend || 'Dieses Wochenende', budget, style, hasDt, fridayStart);
 
     // Cache for 7 days
     try {

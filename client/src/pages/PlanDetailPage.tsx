@@ -118,7 +118,7 @@ export default function PlanDetailPage() {
               <div className="flex flex-wrap gap-3 text-sm font-medium">
                 <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
                   <Clock size={16} className="text-amber-400" />
-                  <span>{trip.durationDays} Tage</span>
+                  <span>{trip.durationDays} Tage {trip.nettoHoursAtDestination && `(${trip.nettoHoursAtDestination}h Netto)`}</span>
                 </div>
                 <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
                   <Wallet size={16} className="text-amber-400" />
