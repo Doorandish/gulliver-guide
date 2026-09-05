@@ -106,13 +106,13 @@ export const getHealth = (req: Request, res: Response) => {
 
 export const planTrip = async (req: Request, res: Response) => {
   try {
-    const { origin, destination } = req.body;
+    const { origin, destination, hasDt } = req.body;
     if (!destination) {
       return res.status(400).json({ error: 'Destination is required' });
     }
 
     const baseSlug = generateSlug(destination);
-    const slug = `${baseSlug}-mit-der-bahn`;
+    const slug = `${baseSlug}-mit-der-bahn${hasDt ? '-dticket' : ''}`;
 
     // 1. Check Redis Cache
     let cachedTrip = null;
@@ -161,26 +161,26 @@ export const planTrip = async (req: Request, res: Response) => {
 
 export const discoverTrips = async (req: Request, res: Response) => {
   try {
-    const { origin, weekend, budget, style } = req.body;
+    const { origin, weekend, budget, style, hasDt } = req.body;
     if (!origin) {
       return res.status(400).json({ error: 'Origin is required' });
     }
 
-    const cacheKey = `discover:${generateSlug(origin)}:${generateSlug(weekend || 'this')}:${generateSlug(budget || 'any')}:${generateSlug(style || 'any')}`;
+    const cacheKey = `discover:${generateSlug(origin)}:${generateSlug(weekend || 'this')}:${generateSlug(budget || 'any')}:${generateSlug(style || 'any')}:${hasDt ? 'dt' : 'no-dt'}`;
 
     // Check Redis cache (bypass on error)
     let cached = null;
     try {
       cached = await redisClient.get(cacheKey);
     } catch (redisErr) {
-      console.warn('Redis cache get failed, bypassing:', redisErr);
+      console.warn('Redis cache get failed, ignoring:', redisErr);
     }
     
     if (cached) {
       return res.json(JSON.parse(cached));
     }
 
-    const suggestions = await discoverDestinations(origin, weekend || 'Dieses Wochenende', budget, style);
+    const suggestions = await discoverDestinations(origin, weekend || 'Dieses Wochenende', budget, style, hasDt);
 
     // Cache for 7 days
     try {
@@ -189,7 +189,7 @@ export const discoverTrips = async (req: Request, res: Response) => {
       console.warn('Redis cache set failed, ignoring:', redisErr);
     }
 
-    return res.json({ suggestions });
+    res.json({ suggestions });
   } catch (error) {
     console.error('Error discovering trips:', error);
     return res.status(500).json({ error: 'Failed to discover trips' });

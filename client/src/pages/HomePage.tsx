@@ -16,14 +16,14 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   // Tab 1: Plan a known destination
-  const handlePlan = async (origin: string, destination: string, budget?: string, style?: string) => {
+  const handlePlan = async (origin: string, destination: string, budget?: string, style?: string, hasDt?: boolean) => {
     setIsLoading(true);
     setDiscoveries([]);
     try {
       const res = await fetch('/api/trips/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ origin, destination, budget, style }),
+        body: JSON.stringify({ origin, destination, budget, style, hasDt }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -40,10 +40,11 @@ export default function HomePage() {
   };
 
   // Tab 2: Discover destinations
-  const handleDiscover = (origin: string, weekend: string, budget?: string, style?: string) => {
+  const handleDiscover = (origin: string, weekend: string, budget?: string, style?: string, hasDt?: boolean) => {
     const params = new URLSearchParams({ from: origin, when: weekend });
     if (budget) params.append('budget', budget);
     if (style) params.append('style', style);
+    if (hasDt) params.append('dticket', 'true');
     navigate(`/entdecken?${params.toString()}`);
   };
 

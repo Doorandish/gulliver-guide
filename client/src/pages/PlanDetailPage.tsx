@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, Wallet, Leaf, CloudSun } from 'lucide-react';
+import { ArrowLeft, Clock, Wallet, Leaf, CloudSun, Printer } from 'lucide-react';
 import SeoHead from '../components/SeoHead';
 import Timeline from '../components/Timeline';
 import MobilityHub from '../components/MobilityHub';
@@ -114,19 +114,28 @@ export default function PlanDetailPage() {
               )}
             </div>
             
-            <div className="flex flex-wrap gap-3 text-sm font-medium">
-              <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
-                <Clock size={16} className="text-amber-400" />
-                <span>{trip.durationDays} Tage</span>
+            <div className="flex flex-wrap items-center justify-between gap-4 mt-8">
+              <div className="flex flex-wrap gap-3 text-sm font-medium">
+                <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
+                  <Clock size={16} className="text-amber-400" />
+                  <span>{trip.durationDays} Tage</span>
+                </div>
+                <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
+                  <Wallet size={16} className="text-amber-400" />
+                  <span>Aktivitäten: {Math.round(calculatedBudget)} €</span>
+                </div>
+                <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
+                  <Leaf size={16} className="text-green-400" />
+                  <span>{trip.co2SavedPercent}% CO₂ gespart</span>
+                </div>
               </div>
-              <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
-                <Wallet size={16} className="text-amber-400" />
-                <span>Aktivitäten: {Math.round(calculatedBudget)} €</span>
-              </div>
-              <div className="bg-forest-800/60 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 border border-forest-600/50 shadow-sm">
-                <Leaf size={16} className="text-green-400" />
-                <span>{trip.co2SavedPercent}% CO₂ gespart</span>
-              </div>
+
+              <button 
+                onClick={() => window.print()}
+                className="bg-white text-forest-800 hover:bg-forest-50 px-4 py-2 rounded-lg flex items-center gap-2 font-bold shadow-md transition-all text-sm print:hidden"
+              >
+                <Printer size={16} /> Offline-Plan als PDF
+              </button>
             </div>
           </div>
         </div>

@@ -17,8 +17,8 @@ type BudgetOption = 'Günstig' | 'Mittel' | 'Komfort';
 type StyleOption = 'Kultur' | 'Natur' | 'Entspannung' | 'Party';
 
 interface HeroProps {
-  onPlan: (origin: string, destination: string, budget?: string, style?: string) => void;
-  onDiscover: (origin: string, weekend: string, budget?: string, style?: string) => void;
+  onPlan: (origin: string, destination: string, budget?: string, style?: string, hasDt?: boolean) => void;
+  onDiscover: (origin: string, weekend: string, budget?: string, style?: string, hasDt?: boolean) => void;
   isLoading: boolean;
 }
 
@@ -32,16 +32,17 @@ export default function Hero({ onPlan, onDiscover, isLoading }: HeroProps) {
   const [showOptions, setShowOptions] = useState(false);
   const [budget, setBudget] = useState<BudgetOption | ''>('');
   const [style, setStyle] = useState<StyleOption | ''>('');
+  const [hasDt, setHasDt] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (activeTab === 'destination') {
       if (origin.trim() && destination.trim()) {
-        onPlan(origin.trim(), destination.trim(), budget || undefined, style || undefined);
+        onPlan(origin.trim(), destination.trim(), budget || undefined, style || undefined, hasDt);
       }
     } else {
       if (origin.trim()) {
-        onDiscover(origin.trim(), weekend, budget || undefined, style || undefined);
+        onDiscover(origin.trim(), weekend, budget || undefined, style || undefined, hasDt);
       }
     }
   };
@@ -258,6 +259,22 @@ export default function Hero({ onPlan, onDiscover, isLoading }: HeroProps) {
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Deutschlandticket */}
+                  <div className="pt-2">
+                    <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-slate-200 hover:border-forest-400 hover:bg-forest-50/50 transition-colors">
+                      <input 
+                        type="checkbox" 
+                        checked={hasDt}
+                        onChange={(e) => setHasDt(e.target.checked)}
+                        className="w-5 h-5 rounded text-forest-600 focus:ring-forest-500 border-slate-300"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-slate-700">Deutschlandticket vorhanden</span>
+                        <span className="text-xs text-slate-500">Ausschließlich Regionalzüge (RE/RB), Zug-Kosten = 0€</span>
+                      </div>
+                    </label>
                   </div>
                 </div>
               )}

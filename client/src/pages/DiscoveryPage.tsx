@@ -36,6 +36,7 @@ export default function DiscoveryPage() {
   const weekend = searchParams.get('when') || 'Dieses Wochenende';
   const budget = searchParams.get('budget') || '';
   const style = searchParams.get('style') || '';
+  const hasDt = searchParams.get('dticket') === 'true';
 
   const [discoveries, setDiscoveries] = useState<DiscoverySuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +56,7 @@ export default function DiscoveryPage() {
         const res = await fetch('/api/trips/discover', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ origin, weekend, budget, style }),
+          body: JSON.stringify({ origin, weekend, budget, style, hasDt }),
         });
         if (res.ok) {
           const data = await res.json();
@@ -105,7 +106,7 @@ export default function DiscoveryPage() {
       const res = await fetch('/api/trips/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ origin, destination, budget, style }),
+        body: JSON.stringify({ origin, destination, budget, style, hasDt }),
       });
       if (res.ok) {
         const data = await res.json();

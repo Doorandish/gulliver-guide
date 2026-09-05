@@ -78,7 +78,7 @@ export async function generateWithGemini(prompt: string, systemInstruction?: str
   throw lastError || new Error('No compatible Gemini model found for this API key.');
 }
 
-export const generateItinerary = async (destination: string): Promise<TripPlanData> => {
+export const generateItinerary = async (destination: string, hasDt?: boolean): Promise<TripPlanData> => {
   const schemaStr = `{
     "destination": "string",
     "durationDays": "number",
@@ -104,8 +104,14 @@ export const generateItinerary = async (destination: string): Promise<TripPlanDa
     ]
   }`;
 
-  const systemInstruction = 'Act as an expert German travel planner. Generate a weekend trip itinerary. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation.';
-  const prompt = `Act as an expert German travel planner. Generate a weekend trip itinerary for ${destination}. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
+  let systemInstruction = 'Act as an expert German travel planner. Generate a weekend trip itinerary. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation.';
+  let prompt = `Act as an expert German travel planner. Generate a weekend trip itinerary for ${destination}. All content in German. Only real, authentic landmarks and attractions. Budget in EUR. Include train recommendation. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
+
+  if (hasDt) {
+    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze AUSSCHLIESSLICH Regionalzüge (RE, RB, S-Bahn), KEINE ICE/IC/EC. Die Fahrtkosten für Züge betragen 0€ im Gesamtbudget.';
+    systemInstruction += dtInstruction;
+    prompt += dtInstruction;
+  }
 
   const geminiResponse = await generateWithGemini(prompt, systemInstruction);
   
@@ -128,7 +134,8 @@ export const discoverDestinations = async (
   origin: string,
   weekend: string,
   budget?: string,
-  style?: string
+  style?: string,
+  hasDt?: boolean
 ): Promise<DiscoverySuggestion[]> => {
   const budgetHint = budget ? ` Budget-Niveau: ${budget}.` : '';
   const styleHint = style ? ` Reisestil: ${style}.` : '';
@@ -147,8 +154,14 @@ export const discoverDestinations = async (
     ]
   }`;
 
-  const systemInstruction = 'Du bist ein Experte für Wochenendreisen in Deutschland per Bahn. Schlage ein JSON Array mit genau 8 unterschiedlichen Reisezielen vor, die per Zug vom Abfahrtsort gut erreichbar sind. Antworte nur mit echten Städten und authentischen Sehenswürdigkeiten. Alle Budget-Angaben als positive Zahl (z.B. 160). photoQuery ist der Name einer ikonischen Sehenswürdigkeit (z.B. "Altes Rathaus Bamberg").';
-  const prompt = `Schlage ein JSON Array mit genau 8 perfekten Wochenendzielen vor für eine Zugreise ab ${origin} (z.B. ab München -> Bamberg, Regensburg, Würzburg etc). Zeitraum: ${weekend}.${budgetHint}${styleHint} Nur echte deutsche Städte und Attraktionen. Alles auf Deutsch. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
+  let systemInstruction = 'Du bist ein Experte für Wochenendreisen in Deutschland per Bahn. Schlage ein JSON Array mit genau 8 unterschiedlichen Reisezielen vor, die per Zug vom Abfahrtsort gut erreichbar sind. Antworte nur mit echten Städten und authentischen Sehenswürdigkeiten. Alle Budget-Angaben als positive Zahl (z.B. 160). photoQuery ist der Name einer ikonischen Sehenswürdigkeit (z.B. "Altes Rathaus Bamberg").';
+  let prompt = `Schlage ein JSON Array mit genau 8 perfekten Wochenendzielen vor für eine Zugreise ab ${origin} (z.B. ab München -> Bamberg, Regensburg, Würzburg etc). Zeitraum: ${weekend}.${budgetHint}${styleHint} Nur echte deutsche Städte und Attraktionen. Alles auf Deutsch. MUST RETURN STRICT JSON MATCHING THIS SCHEMA: ${schemaStr}`;
+
+  if (hasDt) {
+    const dtInstruction = ' Der Nutzer reist mit dem Deutschlandticket. Nutze AUSSCHLIESSLICH Regionalzüge (RE, RB, S-Bahn), KEINE ICE/IC/EC. Die Fahrtkosten für Züge betragen 0€ im Gesamtbudget. Ziele sollten in 1-4 Stunden erreichbar sein.';
+    systemInstruction += dtInstruction;
+    prompt += dtInstruction;
+  }
 
   const geminiResponse = await generateWithGemini(prompt, systemInstruction);
   

@@ -17,12 +17,11 @@ export default function MobilityHub({ to, saturday, sunday }: MobilityHubProps) 
   const departureDateDb = saturday;
   const returnDateDb = sunday;
 
-  // Deep Links
-  const dbahnUrl = `https://www.bahn.de/buchung/fahrplan/suche#sts=true&so=München&zo=${encodeURIComponent(to)}&sot=ST&zot=ST&soid=8000261&zoid=&sod=outward&outwardDate=${departureDateDb}&outwardTime=08:00&returnDate=${returnDateDb}&returnTime=15:00`;
-  const flixbusUrl = `https://shop.flixbus.de/search?departureCity=Munich&arrivalCity=${encodeURIComponent(to)}&rideDate=${formattedDeparture}`;
+  // Deep Links with Affiliate Tracking
+  const dbahnUrl = `https://www.bahn.de/buchung/fahrplan/suche?awc=12345_1234567890_abcdef#sts=true&so=München&zo=${encodeURIComponent(to)}&sot=ST&zot=ST&soid=8000261&zoid=&sod=outward&outwardDate=${departureDateDb}&outwardTime=08:00&returnDate=${returnDateDb}&returnTime=15:00`;
+  const flixbusUrl = `https://shop.flixbus.de/search?departureCity=Munich&arrivalCity=${encodeURIComponent(to)}&rideDate=${formattedDeparture}&affiliate_id=GulliverGuide`;
   const blablacarUrl = `https://www.blablacar.de/search?fn=München&tn=${encodeURIComponent(to)}&db=${departureDateDb}`;
-
-  const bookingUrl = `https://www.booking.com/searchresults.de.html?ss=${encodeURIComponent(to)}&checkin=${departureDateDb}&checkout=${returnDateDb}`;
+  const bookingUrl = `https://www.booking.com/searchresults.de.html?ss=${encodeURIComponent(to)}&checkin=${departureDateDb}&checkout=${returnDateDb}&aid=1234567`;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-10 w-full mx-auto">
