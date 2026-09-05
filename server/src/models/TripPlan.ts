@@ -4,16 +4,21 @@ export interface ITripPlan extends Document {
   slug: string;
   destination: string;
   durationDays: number;
+  nettoHoursAtDestination?: number;
   totalBudget: number;
   co2SavedPercent: number;
   recommendedTrain: string;
+  outboundJourney?: any;
+  inboundJourney?: any;
   days: {
     dayNumber: number;
     title: string;
     activities: {
-      timeSlot: 'Morgen' | 'Nachmittag' | 'Abend';
+      time?: string;
+      timeSlot?: string;
       title: string;
       description: string;
+      rainAlternative?: string;
       estimatedPrice: number;
       category: string;
       bookingDeepLink?: string;
@@ -30,21 +35,23 @@ const TripPlanSchema: Schema = new Schema(
     slug: { type: String, required: true, unique: true, index: true },
     destination: { type: String, required: true },
     durationDays: { type: Number, default: 2 },
+    nettoHoursAtDestination: { type: Number },
     totalBudget: { type: Number },
     co2SavedPercent: { type: Number },
     recommendedTrain: { type: String },
+    outboundJourney: { type: Schema.Types.Mixed },
+    inboundJourney: { type: Schema.Types.Mixed },
     days: [
       {
         dayNumber: { type: Number },
         title: { type: String },
         activities: [
           {
-            timeSlot: {
-              type: String,
-              enum: ['Morgen', 'Nachmittag', 'Abend'],
-            },
+            time: { type: String },
+            timeSlot: { type: String },
             title: { type: String },
             description: { type: String },
+            rainAlternative: { type: String },
             estimatedPrice: { type: Number },
             category: { type: String },
             bookingDeepLink: { type: String, required: false },
